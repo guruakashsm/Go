@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Interactive Iframes</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        background-color: #f4f4f4;
+        transition: background-color 0.3s, color 0.3s;
+      }
+
+      header {
+        background-color: #4caf50;
+        color: white;
+        padding: 10px 15px;
+        text-align: center;
+        position: fixed;
+        width: 100%;
+        top: 0;
+        z-index: 1;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: transform 0.3s ease;
+      }
+
+      header .logo {
+        display: flex;
+        align-items: center;
+      }
+
+      header .logo h2 {
+        margin: 0;
+        padding: 0;
+      }
+
+      header .logo img {
+        height: 20%;
+        width: 50%;
+      }
+
+      /* Hide the header by default */
+      header.collapsed {
+        transform: translateY(-100%);
+        visibility: hidden;
+      }
+
+      /* Hamburger Icon */
+      .hamburger-icon {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        width: 30px;
+        height: 20px;
+        cursor: pointer;
+        z-index: 2;
+        position: fixed;
+        top: 20px;
+        right: 20px;
+      }
+
+      .hamburger-icon div {
+        width: 100%;
+        height: 4px;
+        background-color: rgb(75, 57, 57);
+        border-radius: 2px;
+      }
+
+      header button {
+        background-color: #45a049;
+        padding: 10px 20px;
+        border: none;
+        color: white;
+        cursor: pointer;
+        border-radius: 5px;
+        margin-left: 10px; /* Space between buttons */
+      }
+
+      header button:hover {
+        background-color: #388e3c;
+      }
+
+      .iframe-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: stretch;
+        position: absolute;
+        top: 60px; /* Default navbar height */
+        left: 0;
+        right: 0;
+        bottom: 0;
+        margin: 0;
+        transition: top 0.3s ease;
+      }
+
+      iframe {
+        border: none;
+        flex-grow: 1;
+        height: 100%;
+        transition: filter 0.3s;
+      }
+
+      .resizer {
+        background-color: #4caf50;
+        width: 10px;
+        height: 100%;
+        position: relative;
+        cursor: ew-resize; /* Cursor for dragging */
+      }
+
+      .buttons-container {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        z-index: 10;
+        display: none; /* Hidden by default */
+      }
+
+      .controls {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .move-button {
+        margin: 5px;
+        padding: 10px 20px;
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        cursor: pointer;
+        border-radius: 5px;
+      }
+
+      .move-button:hover {
+        background-color: #45a049;
+      }
+
+      .show-buttons {
+        display: block; /* Display buttons when toggled */
+      }
+
+      /* Dark mode styles */
+      body.dark-mode {
+        background-color: #121212;
+        color: white;
+      }
+
+      body.dark-mode header {
+        background-color: #333;
+      }
+
+      body.dark-mode iframe {
+        filter: brightness(0.8);
+      }
+
+      body.dark-mode .move-button {
+        background-color: #333;
+      }
+
+      body.dark-mode .move-button:hover {
+        background-color: #444;
+      }
+
+      .nav-buttons {
+        display: flex;
+        align-items: center;
+        margin-right: 8%;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Hamburger Icon -->
+    <div class="hamburger-icon" onclick="toggleNavbar()" style="display: none">
+      <div></div>
+      <div></div>
+      <div></div>
+    </div>
+
+    <!-- Navbar -->
+    <header id="navbar">
+      <!-- Logo and Text -->
+      <div class="logo">
+        <h2 class="stylish-heading">Master Go with Playground</h2>
+      </div>
+
+      <!-- Buttons on the right -->
+      <div class="nav-buttons">
+        <button class="move-button" onclick="moveIframe('top')">
+          Move to Top
+        </button>
+        <button class="move-button" onclick="moveIframe('bottom')">
+          Move to Bottom
+        </button>
+        <button class="move-button" onclick="moveIframe('left')">
+          Move to Left
+        </button>
+        <button class="move-button" onclick="moveIframe('right')">
+          Move to Right
+        </button>
+        <button onclick="toggleDarkMode()">Toggle Dark Mode</button>
+      </div>
+    </header>
+
+    <!-- Iframe Container -->
+    <div class="iframe-container">
+      <iframe
+        id="iframe1"
+        src="https://github1s.com/guruakashsm/Go-lang"
+        title="Go Lang GitHub"
+      ></iframe>
+
+      <!-- Resizer -->
+      <div class="resizer" id="resizer"></div>
+
+      <iframe id="iframe2" src="https://goplay.tools/" title="Go Play"></iframe>
+    </div>
+
+    <script>
+      let iframeContainer = document.querySelector(".iframe-container");
+      let iframe1 = document.getElementById("iframe1");
+      let iframe2 = document.getElementById("iframe2");
+      let resizer = document.getElementById("resizer");
+      let navbar = document.getElementById("navbar");
+
+      let isResizing = false;
+      let startX;
+      let iframe1Width;
+
+      // Function to toggle navbar visibility
+      function toggleNavbar() {
+        navbar.classList.toggle("collapsed");
+        adjustIframeContainer(); // Adjust iframe container size
+      }
+
+      // Function to show the navbar when hovering at the top of the screen
+      function showNavbarOnHover() {
+        navbar.classList.remove("collapsed");
+        adjustIframeContainer();
+      }
+
+      // Function to hide the navbar when the mouse leaves
+      function hideNavbarOnUnhover() {
+        navbar.classList.add("collapsed");
+        adjustIframeContainer();
+      }
+
+      // Function to adjust iframe container when navbar visibility changes
+      function adjustIframeContainer() {
+        const isNavbarCollapsed = navbar.classList.contains("collapsed");
+        if (isNavbarCollapsed) {
+          // When navbar is hidden, set top offset to 0
+          iframeContainer.style.top = "0";
+        } else {
+          // When navbar is visible, set top offset to the height of the navbar
+          iframeContainer.style.top = `${navbar.offsetHeight}px`;
+        }
+      }
+
+      // Attach mouseover and mouseout events to the top of the screen
+      document.addEventListener("mousemove", (e) => {
+        if (e.clientY <= 5) {
+          showNavbarOnHover(); // Show navbar when the mouse is near the top of the screen
+        }
+      });
+
+      navbar.addEventListener("mouseleave", hideNavbarOnUnhover);
+
+      // Initial adjustment on page load
+      window.onload = adjustIframeContainer;
+
+      // Adjust iframe container size when the window is resized
+      window.onresize = adjustIframeContainer;
+
+      // Function to move the iframes
+      function moveIframe(direction) {
+        switch (direction) {
+          case "top":
+            iframeContainer.style.flexDirection = "column";
+            iframe1.style.width = "100%";
+            iframe2.style.width = "100%";
+            iframe1.style.height = "45%";
+            iframe2.style.height = "45%";
+            resizer.style.cursor = "ns-resize";
+            resizer.style.height = "10px";
+            resizer.style.width = "100%";
+            break;
+          case "bottom":
+            iframeContainer.style.flexDirection = "column-reverse";
+            iframe1.style.width = "100%";
+            iframe2.style.width = "100%";
+            iframe1.style.height = "45%";
+            iframe2.style.height = "45%";
+            resizer.style.cursor = "ns-resize";
+            resizer.style.height = "10px";
+            resizer.style.width = "100%";
+            break;
+          case "left":
+            iframeContainer.style.flexDirection = "row";
+            iframe1.style.width = "45%";
+            iframe2.style.width = "45%";
+            iframe1.style.height = "100%";
+            iframe2.style.height = "100%";
+            resizer.style.cursor = "ew-resize";
+            resizer.style.width = "10px";
+            resizer.style.height = "100%";
+            break;
+          case "right":
+            iframeContainer.style.flexDirection = "row-reverse";
+            iframe1.style.width = "45%";
+            iframe2.style.width = "45%";
+            iframe1.style.height = "100%";
+            iframe2.style.height = "100%";
+            resizer.style.cursor = "ew-resize";
+            resizer.style.width = "10px";
+            resizer.style.height = "100%";
+            break;
+          default:
+            break;
+        }
+      }
+
+      // Handle mouse move for vertical resizer
+      function handleMouseMove(e) {
+        if (isResizing) {
+          if (resizer.style.cursor === "ew-resize") {
+            // Horizontal resizing
+            let offsetX = e.clientX - startX;
+            let newIframe1Width = iframe1Width + offsetX;
+
+            if (
+              newIframe1Width > 50 &&
+              newIframe1Width < iframeContainer.offsetWidth - 50
+            ) {
+              iframe1.style.width = newIframe1Width + "px";
+              iframe2.style.width =
+                iframeContainer.offsetWidth -
+                newIframe1Width -
+                resizer.offsetWidth +
+                "px";
+            }
+          } else if (resizer.style.cursor === "ns-resize") {
+            // Vertical resizing
+            let offsetY = e.clientY - startX;
+            let newIframe1Height = iframe1Width + offsetY;
+
+            if (
+              newIframe1Height > 50 &&
+              newIframe1Height < iframeContainer.offsetHeight - 50
+            ) {
+              iframe1.style.height = newIframe1Height + "px";
+              iframe2.style.height =
+                iframeContainer.offsetHeight -
+                newIframe1Height -
+                resizer.offsetHeight +
+                "px";
+            }
+          }
+        }
+      }
+
+      // Mouse down event to start resizing
+      resizer.addEventListener("mousedown", function (e) {
+        isResizing = true;
+        startX = e.clientX; // Get initial mouse position
+        iframe1Width = iframe1.offsetWidth;
+
+        // Prevent text selection during drag
+        e.preventDefault();
+
+        // Change cursor to indicate resizing
+        document.body.style.cursor = "ew-resize";
+
+        // Add mousemove and mouseup listeners
+        document.addEventListener("mousemove", handleMouseMove);
+        document.addEventListener("mouseup", handleMouseUp);
+      });
+
+      // Mouse up event to stop resizing
+      function handleMouseUp() {
+        if (isResizing) {
+          isResizing = false; // Stop the resizing process
+          document.body.style.cursor = "default"; // Reset cursor to default
+
+          // Remove the event listeners for mousemove and mouseup
+          document.removeEventListener("mousemove", handleMouseMove);
+          document.removeEventListener("mouseup", handleMouseUp);
+        }
+      }
+
+      // Toggle Dark Mode
+      function toggleDarkMode() {
+        document.body.classList.toggle("dark-mode");
+      }
+    </script>
+  </body>
+</html>
