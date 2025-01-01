@@ -1,6 +1,8 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+)
 
 // Node represents a single node in the linked list
 type Node struct {
@@ -129,18 +131,46 @@ func (list *LinkedList) InsertBeforeValue(beforeValue, data int) {
 	current.Next = node
 }
 
+/*
+InsertInSortedList inserts a new node in a sorted linked list
+It takes the data to be inserted as an argument
+It creates a new node with the given data and inserts it in the sorted list
+It iterates through the list to find the correct position to insert the new node
+If the list is empty or the data is smaller than the head, it inserts the new node at the beginning
+If the data is greater than the head, it iterates through the list to find the correct position to insert the new node
+*/
+func (list *LinkedList) InsertInSortedList(data int) {
+	node := &Node{Data: data, Next: nil}
+
+	if list.Head == nil || list.Head.Data >= data {
+		node.Next = list.Head
+		list.Head = node
+		return
+	}
+
+	current := list.Head
+
+	for current.Next != nil && current.Next.Data <= data {
+		current = current.Next
+	}
+
+	node.Next = current.Next
+	current.Next = node
+}
+
 func main() {
 	list := LinkedList{}
 
-	list.InsertAtBack(1)
-	list.InsertAtBack(2)
 	list.InsertAtBack(3)
-	list.InsertAtBack(4)
-	list.InsertAtBack(5)
-	list.InsertAtFront(0)
-	list.InsertAtFront(-1)
-	list.InsertAfterValue(5, 7)
-	list.InsertBeforeValue(7, 6)
+	list.InsertAtBack(6)
+	list.InsertAtFront(2)
+	list.InsertAtFront(1)
+	list.InsertAfterValue(3, 5)
+	list.InsertBeforeValue(5, 4)
+	list.InsertAtBack(9)
+	list.InsertAtBack(10)
+	list.InsertInSortedList(8)
+	list.InsertInSortedList(7)
 
 	list.Print()
 
