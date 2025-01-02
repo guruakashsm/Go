@@ -369,6 +369,124 @@ func (list *LinkedList) DeleteAllByValue(value int) {
 	}
 }
 
+func (list *LinkedList) Length() int {
+	n := 0
+	current := list.Head
+	for current != nil {
+		current = current.Next
+		n++
+	}
+
+	fmt.Println("Count :", n)
+	return n
+
+}
+
+func (list *LinkedList) FindIndexByValue(data int) int {
+	n := 0
+	current := list.Head
+	for current != nil && current.Data != data {
+		current = current.Next
+		n++
+	}
+
+	if current == nil {
+		return -1
+	}
+
+	fmt.Println("Position :", n)
+	return n
+}
+
+func (list *LinkedList) PrintReverseWithDefer() {
+	current := list.Head
+	for current != nil {
+		defer fmt.Println("Data is :", current.Data)
+		current = current.Next
+	}
+}
+
+func (list *LinkedList) PrintReverseWithRecursion() {
+
+	var printReverse func(node *Node)
+	printReverse = func(node *Node) {
+		if node == nil {
+			return
+		}
+		printReverse(node.Next)
+		fmt.Println("Data:", node.Data)
+	}
+
+	printReverse(list.Head)
+}
+
+func (list *LinkedList) FindMax() {
+	var max int
+	if list.Head == nil {
+		return
+	}
+
+	max = list.Head.Data
+	current := list.Head
+	for current != nil {
+		if current.Data > max {
+			max = current.Data
+		}
+		current = current.Next
+	}
+
+	fmt.Println("Max :", max)
+}
+
+func (list *LinkedList) FindMin() {
+	var min int
+	if list.Head == nil {
+		return
+	}
+
+	min = list.Head.Data
+	current := list.Head
+	for current != nil {
+		if current.Data < min {
+			min = current.Data
+		}
+		current = current.Next
+	}
+
+	fmt.Println("Min :", min)
+}
+
+func (list *LinkedList) FindMiddle() {
+	if list.Head == nil {
+		return
+	}
+
+	slow := list.Head
+	fast := list.Head
+
+	for fast != nil && fast.Next != nil {
+		slow = slow.Next
+		fast = fast.Next.Next
+	}
+
+	fmt.Printf("Mid Value : %d \n", slow.Data)
+}
+
+func (list *LinkedList) Reverse() {
+	var prev *Node
+	current := list.Head
+	for current != nil {
+		next := current.Next
+		current.Next = prev
+		prev = current
+		current = next
+	}
+	list.Head = prev
+}
+
+// TODO : SortList
+// TODO : Remove Duplicates
+
 func main() {
 	list := LinkedList{}
 
@@ -390,13 +508,21 @@ func main() {
 	list.UpdateByPosition(13, 5)
 	list.UpdateByPosition(12, 6)
 
-	list.DeleteByValue(4)
-	list.DeleteByValue(4)
-	list.DeleteByIndex(2)
-	list.DeleteByIndex(2)
-	list.DeleteAllByValue(3)
-	list.DeleteAllByValue(3)
+	// list.DeleteByValue(4)
+	// list.DeleteByValue(4)
+	// list.DeleteByIndex(2)
+	// list.DeleteByIndex(2)
+	// list.DeleteAllByValue(3)
+	// list.DeleteAllByValue(3)
+	list.FindIndexByValue(13)
+	list.Length()
+
+	// list.PrintReverseWithRecursion()
+	list.FindMax()
+	list.FindMin()
+	list.DeleteAllByValue(4)
 
 	list.Print()
+	list.FindMiddle()
 
 }
